@@ -1,0 +1,79 @@
+% ============================================================================
+%  SECTION 1 — INTRODUCTION & MOTIVATION        (Membre 1)
+% ============================================================================
+\section{Introduction et motivation}
+\label{sec:intro}
+
+\subsection{Du cours a une question laissee ouverte}
+
+Le cours d'optimisation convexe etablit un resultat fondamental : pour une
+fonction convexe sur un ensemble convexe, \emph{tout minimum local est un
+minimum global}. Cette propriete --- que nous appellerons la \guillemotleft{}~propriete-or~\guillemotright{}
+--- est ce qui rend les problemes convexes \guillemotleft{}~faciles~\guillemotright{} a optimiser : il
+n'existe pas de creux sous-optimal dans lequel un algorithme pourrait rester
+piege.
+
+Le cours a ensuite presente deux familles de methodes de resolution :
+\begin{itemize}
+  \item pour un objectif \textbf{lisse} (differentiable), les methodes fondees
+        sur le gradient (descente de gradient, methode de Newton) ;
+  \item pour un objectif \textbf{lineaire}, l'algorithme du simplexe.
+\end{itemize}
+
+Ces deux familles couvrent une large part des problemes, mais elles partagent
+une hypothese implicite forte : la descente de gradient et la methode de Newton
+exigent que la fonction objectif soit \emph{differentiable}, tandis que le
+simplexe ne traite que le cas \emph{lineaire}. Une question reste donc ouverte,
+et c'est precisement celle qu'explore ce projet :
+
+\begin{center}
+\itshape
+Comment resoudre un probleme convexe lorsque la fonction objectif est
+convexe mais \textbf{ni lisse, ni lineaire} ?
+\end{center}
+
+Ce cas de figure est loin d'etre marginal : il apparait des que l'on ajoute a
+un objectif lisse un terme de regularisation non differentiable, situation
+omnipresente en traitement du signal, en statistique et en apprentissage
+automatique.
+
+\subsection{La technique etudiee : les methodes de gradient proximal}
+
+Pour repondre a cette question, nous etudions une famille de methodes de
+premier ordre adaptees au cas non lisse : les \textbf{methodes de gradient
+proximal}, et en particulier l'algorithme \textbf{ISTA} (\emph{Iterative
+Shrinkage-Thresholding Algorithm}) et son acceleration \textbf{FISTA}
+(\emph{Fast ISTA}). Conformement au sujet B, le c\oe ur de ce rapport est
+l'\emph{etude de cette technique de resolution} : sa construction, ses garanties
+de convergence, et sa comparaison avec les alternatives existantes.
+
+Il importe de souligner d'emblee qu'ISTA et FISTA \emph{ne sont pas des
+algorithmes d'apprentissage automatique} : ce sont des algorithmes
+d'optimisation convexe, au meme titre que le gradient conjugue ou les methodes
+de point interieur cites dans l'enonce du sujet B. Le fait qu'ils soient
+frequemment employes en apprentissage ne change rien a leur nature : ils
+resolvent un probleme d'optimisation, point.
+
+\subsection{Fil conducteur et application illustrative}
+
+Pour ancrer l'etude dans un probleme concret, nous utilisons comme fil rouge le
+probleme du \textbf{LASSO} (regression lineaire avec penalisation $L_1$), qui
+est l'instance canonique d'un objectif convexe composite \guillemotleft{}~lisse $+$ non
+lisse~\guillemotright{}. En fin de rapport, nous illustrons l'interet pratique de la methode
+sur une \textbf{application a la separation de sources audio}
+(section~\ref{sec:audio}) ; cette application reste toutefois une
+\emph{illustration} et non le sujet : elle rend le probleme tangible et fournit
+une evaluation quantitative, mais l'analyse demeure centree sur l'optimisation.
+
+\subsection{Organisation du rapport}
+
+Le rapport s'organise en trois temps. La premiere partie pose le cadre :
+rappels du cours mobilises (section~\ref{sec:rappels}) puis formulation precise
+du probleme composite et preuve de sa convexite (section~\ref{sec:probleme}).
+La deuxieme partie constitue le c\oe ur theorique : les outils de l'optimisation
+non lisse, dont l'operateur proximal (section~\ref{sec:theorie}), puis les
+algorithmes ISTA (section~\ref{sec:ista}) et FISTA (section~\ref{sec:fista})
+avec leurs preuves de convergence. La troisieme partie met la methode en
+perspective : etat de l'art comparatif (section~\ref{sec:etatart}), application
+audio (section~\ref{sec:audio}) et experiences numeriques
+(section~\ref{sec:exp}). La section~\ref{sec:conclusion} conclut.

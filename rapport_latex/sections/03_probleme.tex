@@ -1,0 +1,120 @@
+% ============================================================================
+%  SECTION 3 — LE PROBLEME : MINIMISATION CONVEXE COMPOSITE   (Membre 1)
+% ============================================================================
+\section{Le probleme : minimisation convexe composite}
+\label{sec:probleme}
+
+\subsection{Un probleme inverse sous-determine}
+
+Placons-nous dans une situation typique du traitement du signal. On observe un
+vecteur de mesures $y \in \R^{n}$, relie a un signal inconnu $x \in \R^{p}$ par
+une matrice connue $A \in \R^{n \times p}$ :
+\[
+  y = A x + \varepsilon,
+\]
+ou $\varepsilon$ represente un bruit. Le point determinant est que l'on dispose
+de \emph{moins de mesures que d'inconnues} ($p > n$) : le systeme est
+\emph{sous-determine} et admet une infinite de solutions compatibles avec $y$.
+Sans information supplementaire, le probleme est mal pose.
+
+L'information que l'on ajoute est une hypothese de \textbf{parcimonie}
+(\emph{sparsity}) : le vrai signal $x$ ne possede que peu de composantes non
+nulles. Cette hypothese est realiste --- de nombreux signaux naturels admettent
+une representation creuse dans une base adaptee --- et suffit a rendre le
+probleme bien pose.
+
+\subsection{Formulation : le LASSO}
+
+Pour retrouver $x$, on minimise un objectif en deux termes, l'un mesurant la
+fidelite aux donnees, l'autre favorisant la parcimonie :
+\begin{equation}
+\label{eq:lasso}
+  \boxed{\;
+  \min_{x \in \R^{p}} \; F(x)
+  = \underbrace{\tfrac{1}{2}\,\norm{A x - y}_2^{2}}_{f(x)\ \text{(lisse)}}
+  \;+\; \lambda \underbrace{\norm{x}_1}_{g(x)\ \text{(non lisse)}}
+  \;}
+\end{equation}
+ou $\norm{x}_1 = \sum_{i=1}^{p} |x_i|$ et $\lambda > 0$ regle le compromis entre
+les deux termes. Ce probleme est connu sous le nom de \textbf{LASSO}
+(\emph{Least Absolute Shrinkage and Selection Operator}). On notera dans toute
+la suite
+\[
+  f(x) = \tfrac{1}{2}\norm{A x - y}_2^{2},
+  \qquad
+  g(x) = \lambda \norm{x}_1,
+  \qquad
+  F = f + g .
+\]
+Le terme $f$ est differentiable, de gradient
+\begin{equation}
+\label{eq:gradf}
+  \nabla f(x) = A\T (A x - y),
+\end{equation}
+qui est \emph{lipschitzien} de constante $L = \norm{A\T A}_2$ (la plus grande
+valeur propre de $A\T A$). Cette constante jouera un role central dans le choix
+du pas des algorithmes (sections~\ref{sec:ista} et~\ref{sec:fista}).
+
+\subsection{Le probleme est convexe}
+
+Verifions que~\eqref{eq:lasso} entre bien dans le cadre du cours.
+
+\begin{proposition}
+\label{prop:convexe}
+La fonction objectif $F = f + g$ est convexe sur $\R^{p}$, et l'ensemble
+admissible $\R^{p}$ est convexe. Le probleme~\eqref{eq:lasso} est donc un
+probleme d'optimisation convexe.
+\end{proposition}
+
+\begin{proof}
+On procede terme a terme.
+\begin{enumerate}
+  \item \emph{$f$ est convexe.} La fonction $f(x) = \tfrac12\norm{Ax-y}_2^2$ est
+        quadratique, de matrice hessienne $\nabla^2 f(x) = A\T A$. Pour tout
+        $u \in \R^{p}$, $u\T A\T A\, u = \norm{A u}_2^2 \ge 0$, donc $A\T A$ est
+        semi-definie positive : $f$ est convexe.
+  \item \emph{$g$ est convexe.} La norme $\norm{\cdot}_1$ est une norme, donc
+        convexe (inegalite triangulaire et homogeneite) ; multipliee par
+        $\lambda > 0$, elle reste convexe
+        (proposition~\ref{prop:stabilite}).
+  \item \emph{$F$ est convexe.} Comme somme de deux fonctions convexes, $F$ est
+        convexe (proposition~\ref{prop:stabilite}).
+  \item \emph{L'ensemble admissible.} Il s'agit de $\R^{p}$ tout entier, qui est
+        trivialement convexe.
+\end{enumerate}
+La propriete-or (theoreme~\ref{th:or}) s'applique donc : tout minimum local
+de~\eqref{eq:lasso} est global.
+\end{proof}
+
+\begin{remarque}[Pas de stricte convexite en general]
+\label{rem:pas-stricte}
+Conformement a la remarque~\ref{rem:unicite}, $F$ n'est pas strictement convexe
+des que $p > n$. En effet, $f$ n'est strictement convexe que si $A\T A$ est
+\emph{definie} positive, c'est-a-dire si $A$ est injective ; or, avec plus de
+colonnes que de lignes ($p > n$), $A$ possede un noyau non trivial. Quant a
+$g = \lambda\norm{\cdot}_1$, elle est convexe mais pas strictement. On ne peut
+donc pas garantir l'unicite du minimiseur $\xopt$ : les algorithmes des sections
+suivantes convergeront vers une \emph{meme valeur optimale} $\Fopt$, sans que le
+point atteint soit necessairement unique.
+\end{remarque}
+
+\subsection{Pourquoi les methodes du cours echouent}
+\label{subsec:echec}
+
+Le terme $g(x) = \lambda\norm{x}_1$ fait intervenir des valeurs absolues
+$|x_i|$. Or la fonction $t \mapsto |t|$ presente un \emph{point anguleux} en
+$0$ : sa derivee vaut $-1$ a gauche et $+1$ a droite, et \textbf{n'existe pas en
+$0$}. Cette simple observation a des consequences directes :
+\begin{itemize}
+  \item la \textbf{descente de gradient} requiert $\nabla F$, qui n'est pas
+        defini la ou des composantes de $x$ s'annulent --- c'est-a-dire
+        precisement la ou se trouve la solution recherchee, puisqu'elle est
+        creuse ;
+  \item la \textbf{methode de Newton} exige en outre la hessienne de $F$, encore
+        moins disponible ;
+  \item le \textbf{simplexe} ne traite que les objectifs lineaires, alors que le
+        notre est quadratique.
+\end{itemize}
+Il nous faut donc un outil capable de gerer ce point anguleux sans recourir a la
+differentiabilite. Cet outil est l'\emph{operateur proximal}, introduit a la
+section suivante.

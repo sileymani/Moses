@@ -1,0 +1,34 @@
+% ============================================================================
+%  SECTION 6 — FISTA : FAST ISTA
+%  >>> A REMPLIR PAR LE MEMBRE 3 <<<
+%
+%  Depend des sections 4 (prox) et 5 (ISTA).
+%
+%  Contenu attendu (voir REPARTITION_DETAILLEE.md) :
+%    - Le momentum de Nesterov : d'ou vient le point extrapole y_k.
+%    - Iteration :
+%        x_k     = \softthr( y_k - t \nabla f(y_k), t\lambda )
+%        t_{k+1} = (1 + sqrt(1 + 4 t_k^2)) / 2
+%        y_{k+1} = x_k + ((t_k - 1)/t_{k+1}) (x_k - x_{k-1})
+%    - PREUVE (ou esquisse detaillee) DE LA CONVERGENCE EN O(1/k^2)
+%      (suite d'energie de Beck & Teboulle, 2009).
+%    - Discussion des OSCILLATIONS / non-monotonie ; variantes "restart".
+%
+%  Renvoyer a la figure de convergence (section 9) qui montre O(1/k) vs O(1/k^2).
+% ============================================================================
+\section{FISTA : acceleration par momentum}
+\label{sec:fista}
+
+% --- [MEMBRE 3] Ecrire la section ici. Squelette suggere ci-dessous. --------
+
+\subsection{Du gradient proximal au momentum de Nesterov}
+% TODO (Membre 3)
+
+\subsection{L'algorithme}
+% TODO (Membre 3) : pseudo-code, une ligne de plus qu'ISTA.
+
+\subsection{Convergence en $O(1/k^2)$}
+% TODO (Membre 3) : enonce + preuve/esquisse.
+
+\subsection{Non-monotonie et variantes a restart}
+% TODO (Membre 3) : commenter les oscillations observees experimentalement.

@@ -1,0 +1,213 @@
+% ============================================================================
+%  SECTION 7 — ETAT DE L'ART : SITUER ISTA ET FISTA       (Membre 4 — Romain)
+%
+%  NOTE D'INTEGRATION (Membre 1) : ce contenu reprend l'etat de l'art redige par
+%  Romain. Il a ete renumerote (section 7, anciennement "0") et aligne sur les
+%  macros communes (\prox, \softthr, \norm, \T, \Fopt...). Le fond et la
+%  structure d'origine (4 familles + synthese + discussion) sont conserves.
+% ============================================================================
+\section{Etat de l'art : situer ISTA et FISTA}
+\label{sec:etatart}
+
+ISTA et FISTA ne sont qu'un point dans un paysage plus large de methodes
+capables de resoudre le probleme composite~\eqref{eq:lasso}. Le critere
+d'evaluation du sujet B demande explicitement de comparer les alternatives :
+c'est l'objet de cette section. On retient quatre familles --- les methodes de
+gradient proximal, la descente par coordonnees, l'ADMM et le Newton proximal ---
+et on confronte chacune a ISTA/FISTA selon trois axes juges decisifs en
+pratique : la vitesse de convergence (en nombre d'iterations), le cout d'une
+iteration, et la structure de probleme pour laquelle la methode est la mieux
+adaptee.
+
+\subsection{Le cadre commun : minimiser une somme $f + g$}
+
+Toutes ces methodes attaquent le meme objet : une somme d'une partie lisse $f$
+(de gradient $L$-lipschitzien, $L = \norm{A\T A}_2$) et d'une partie convexe non
+lisse $g$. Ce qui les distingue, c'est la maniere dont elles exploitent cette
+structure :
+\begin{itemize}
+  \item \textbf{ISTA/FISTA} separent $f$ et $g$ : un pas de gradient sur $f$,
+        puis l'operateur proximal de $g$ (le seuillage doux). C'est l'approche
+        \emph{full-gradient} : chaque iteration met a jour tout le vecteur $x$.
+  \item La \textbf{descente par coordonnees} exploite la separabilite de
+        $g = \lambda\norm{\cdot}_1 = \sum_j \lambda |x_j|$ pour ne mettre a jour
+        qu'une coordonnee a la fois.
+  \item L'\textbf{ADMM} dedouble les variables (une copie pour $f$, une pour $g$)
+        et les recoud via un multiplicateur.
+  \item Le \textbf{Newton proximal} exploite en plus la courbure de $f$ (la
+        hessienne $A\T A$), la ou ISTA/FISTA n'utilisent que le gradient.
+\end{itemize}
+On reconnait ISTA/FISTA comme le membre le plus \guillemotleft{}~elementaire~\guillemotright{} de cette
+famille : ordre 1, separation minimale, aucune structure supplementaire
+exploitee. Cette sobriete est a la fois leur force (generalite, simplicite, cout
+par iteration faible) et leur limite (convergence sous-lineaire).
+
+\subsection{Descente par coordonnees}
+
+\paragraph{Principe.} Plutot que de bouger toutes les composantes de $x$
+ensemble, on les met a jour une par une : on fixe toutes les coordonnees sauf la
+$j$-ieme et on minimise $F$ exactement selon $x_j$. Pour le LASSO, ce
+sous-probleme a une variable admet une solution explicite --- un seuillage doux
+sur le residu partiel :
+\[
+  x_j \leftarrow \softthr\!\left(
+    \frac{1}{\norm{a_j}_2^{2}}\, a_j\T\big(y - A x + a_j x_j\big),\;
+    \frac{\lambda}{\norm{a_j}_2^{2}}
+  \right),
+\]
+ou $a_j$ est la $j$-ieme colonne de $A$. On balaie les coordonnees cycliquement
+(ou aleatoirement) jusqu'a stabilisation.
+
+\paragraph{Vitesse.} Pour le LASSO, la descente par coordonnees converge a un
+taux asymptotiquement \emph{lineaire}, $F(x_k) - \Fopt = O(\rho^{k})$ avec
+$\rho < 1$, une fois identifie le support de la solution --- bien mieux que le
+$O(1/k)$ d'ISTA et le $O(1/k^2)$ de FISTA dans ce regime final. C'est d'ailleurs
+la methode au c\oe ur de \texttt{glmnet}, l'implementation de reference du LASSO
+en statistique.
+
+\paragraph{Cout par iteration.} Une mise a jour de coordonnee est tres bon
+marche ($O(n)$ si l'on maintient le residu $r = y - Ax$ de maniere
+incrementale). Un balayage complet des $p$ coordonnees coute $O(np)$, comparable
+a une iteration d'ISTA. L'avantage decisif est l'identification automatique du
+support : les coordonnees nulles le restent.
+
+\paragraph{Quand la preferer.} Lorsque la penalite est separable (comme
+$\norm{\cdot}_1$) et que les colonnes de $A$ sont peu correlees ; choix par
+defaut en grande dimension statistique ($p \gg n$) avec solution tres
+parcimonieuse. En revanche, la methode est intrinsequement sequentielle (donc
+difficile a paralleliser) et perd son avantage quand $g$ n'est pas separable.
+
+\subsection{ADMM (Alternating Direction Method of Multipliers)}
+
+\paragraph{Principe.} On reformule le probleme en dedoublant la variable via une
+copie $z$ et la contrainte $x = z$ :
+\[
+  \min_{x, z}\; f(x) + g(z) \quad\text{s.c.}\quad x = z,
+\]
+puis on minimise le lagrangien augmente
+$\mathcal{L}_\rho(x,z,u) = f(x) + g(z) + \tfrac{\rho}{2}\norm{x - z + u}_2^2$ en
+alternant trois pas :
+\[
+\begin{aligned}
+  x_{k+1} &\leftarrow \argmin_x\; f(x) + \tfrac{\rho}{2}\norm{x - z_k + u_k}_2^2
+            && \text{(systeme lineaire),}\\
+  z_{k+1} &\leftarrow \prox_{g/\rho}(x_{k+1} + u_k)
+            && \text{(seuillage doux),}\\
+  u_{k+1} &\leftarrow u_k + x_{k+1} - z_{k+1}
+            && \text{(montee de gradient duale).}
+\end{aligned}
+\]
+Le pas en $z$ est exactement le seuillage doux deja implemente pour ISTA.
+
+\paragraph{Vitesse.} En pratique, l'ADMM atteint une precision moderee en
+nettement moins d'iterations qu'ISTA (souvent quelques dizaines). Theoriquement,
+sa vitesse est $O(1/k)$ pour des objectifs convexes generaux, et lineaire sous
+hypotheses fortes ; elle depend toutefois sensiblement du parametre de penalite
+$\rho$, dont le reglage est delicat.
+
+\paragraph{Cout par iteration.} C'est le point faible : le pas en $x$ exige de
+resoudre un systeme lineaire $(A\T A + \rho I)\,x = b$. Si $A$ est fixe, on
+factorise $A\T A + \rho I$ une seule fois (Cholesky, $O(p^3)$) et chaque
+iteration ne coute plus que deux substitutions $O(p^2)$ : l'ADMM devient alors
+tres competitif. Mais si $\rho$ change ou si $A$ est trop grande pour etre
+factorisee, ce pas redevient couteux. Autre nuance : contrairement a ISTA/FISTA
+et a la descente par coordonnees, les iteres d'ADMM ne sont pas exactement
+parcimonieux avant convergence (seul le bloc $z$ l'est).
+
+\paragraph{Quand le preferer.} Quand le probleme se decompose naturellement
+(regularisations multiples, contraintes, problemes distribues), ou quand la
+factorisation peut etre amortie sur de nombreuses iterations. L'ADMM brille par
+sa modularite : on peut remplacer $g$ par n'importe quelle fonction dont on sait
+calculer le prox.
+
+\subsection{Newton proximal}
+
+\paragraph{Principe.} ISTA majore $f$ par un modele quadratique isotrope
+$\tfrac{1}{2t}\norm{x - x_k}_2^2$ (une \guillemotleft{}~boule~\guillemotright{}). Le Newton proximal
+remplace ce modele par la vraie courbure : il utilise la hessienne
+$H = \nabla^2 f = A\T A$ et resout, a chaque pas, un sous-probleme de la forme
+\[
+  x_{k+1} = \argmin_x\;
+    \nabla f(x_k)\T (x - x_k)
+    + \tfrac{1}{2}(x - x_k)\T H (x - x_k)
+    + g(x),
+\]
+soit un LASSO local, resolu approximativement par un solveur interne (souvent de
+la descente par coordonnees). On peut aussi le voir comme une methode de Newton
+semi-lisse appliquee a la condition d'optimalite $0 \in \partial F(\xopt)$.
+
+\paragraph{Vitesse.} C'est le regime le plus rapide pres de l'optimum :
+convergence superlineaire, voire quadratique localement
+($\norm{x_{k+1} - \xopt} = O(\norm{x_k - \xopt}^2)$). La ou FISTA demande des
+centaines d'iterations pour gagner les derniers chiffres de precision, le Newton
+proximal les obtient en une poignee de pas.
+
+\paragraph{Cout par iteration.} Tres eleve : chaque iteration exige une
+information de second ordre (la hessienne ou son action) et la resolution d'un
+sous-probleme interne. Le pari n'est gagnant que si le faible nombre
+d'iterations externes compense leur cout unitaire --- ce qui suppose en general
+une phase d'amorcage par une methode d'ordre 1 (typiquement FISTA) avant de
+basculer sur Newton.
+
+\paragraph{Quand le preferer.} Quand on vise une haute precision sur un probleme
+de taille moderee, ou quand $f$ est bien conditionnee et la hessienne
+exploitable. A l'inverse, en tres grande dimension ou former $A\T A$ est
+prohibitif, les methodes d'ordre 1 restent incontournables.
+
+\subsection{Synthese comparative}
+
+Le tableau~\ref{tab:comparatif} recapitule les compromis. Aucune methode ne
+domine partout : le bon choix depend de la precision visee, de la taille du
+probleme et de la structure exploitable.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{@{}lllll@{}}
+\toprule
+\textbf{Methode} & \textbf{Ordre} & \textbf{Vitesse} &
+\textbf{Cout / iteration} & \textbf{Terrain de predilection} \\
+\midrule
+ISTA            & 1 & $O(1/k)$            & faible ($Ax$, $A\T r$)        & socle simple, general \\
+FISTA           & 1 & $O(1/k^2)$          & faible (idem ISTA)            & precision moyenne, par defaut \\
+Coord. descent  & 1 & lineaire (asympt.)  & tres faible (1 coord.)        & $g$ separable, $p \gg n$ \\
+ADMM            & 1 & $O(1/k)$, $\rho$-dep.& moyen (systeme lin.)         & decomposable, distribue \\
+Prox. Newton    & 2 & superlin. / quadr.  & eleve (hessienne + interne)   & haute precision, taille moderee \\
+\bottomrule
+\end{tabular}
+\caption{Comparaison des principales methodes pour le LASSO. \guillemotleft{}~Ordre~\guillemotright{}
+designe l'ordre de l'information derivee utilisee. Le regime lineaire de la
+descente par coordonnees et le regime quadratique de Newton sont \emph{locaux}
+(atteints pres de l'optimum).}
+\label{tab:comparatif}
+\end{table}
+
+\paragraph{Discussion des compromis.} Trois arbitrages structurent ce paysage.
+\begin{itemize}
+  \item \emph{Vitesse vs. cout par iteration.} Plus une methode converge en peu
+        d'iterations (Newton, ADMM), plus ces iterations sont cheres. ISTA/FISTA
+        font le pari inverse : des iterations tres bon marche, quitte a en faire
+        beaucoup. En grande dimension, ce pari est souvent le bon.
+  \item \emph{Generalite vs. exploitation de structure.} ISTA/FISTA ne demandent
+        que $\nabla f$ et le prox de $g$ --- d'ou leur generalite. La descente
+        par coordonnees exige la separabilite de $g$ ; le Newton proximal une
+        courbure exploitable ; l'ADMM une decomposition commode. Ces hypotheses,
+        quand elles tiennent, paient.
+  \item \emph{Memoire et robustesse.} ISTA/FISTA et la descente par coordonnees
+        ont une empreinte memoire minimale. L'ADMM stocke une variable duale et
+        idealement une factorisation ; le Newton proximal manipule de
+        l'information de second ordre, le plus gourmand. Cote robustesse, ISTA
+        est le plus previsible ; FISTA introduit des oscillations non monotones
+        (cf.~section~\ref{sec:exp}) que des variantes \emph{restart} corrigent ;
+        l'ADMM est sensible a $\rho$ ; Newton depend d'un bon amorcage.
+\end{itemize}
+
+\paragraph{Position d'ISTA/FISTA.} En definitive, FISTA occupe un point
+d'equilibre remarquable : sans hypothese de structure au-dela de la separation
+$f + g$, sans parametre delicat a regler, avec un cout par iteration minimal, il
+atteint le meilleur taux possible pour une methode du premier ordre
+($O(1/k^2)$, optimal au sens de Nesterov). C'est ce qui en fait le \guillemotleft{}~cheval de
+bataille~\guillemotright{} par defaut, et la brique de base a partir de laquelle les autres
+methodes se construisent ou se comparent --- d'ou sa place centrale dans ce
+projet, les autres approches servant de points de repere pour en mesurer les
+forces et les limites.

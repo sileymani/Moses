@@ -1,0 +1,96 @@
+% ============================================================================
+%  SECTION 2 — RAPPELS ET CADRE THEORIQUE        (Membre 1)
+% ============================================================================
+\section{Rappels et cadre theorique}
+\label{sec:rappels}
+
+Cette section rassemble les notions du cours mobilisees dans la suite. Elle ne
+vise pas l'exhaustivite mais fixe le vocabulaire, les notations et les
+proprietes sur lesquelles reposent les sections suivantes.
+
+\subsection{Probleme d'optimisation}
+
+Un probleme d'optimisation consiste a minimiser (ou maximiser) une fonction
+objectif $f : A \to \R$ sur un ensemble admissible $A$ :
+\[
+  \min_{x \in A} \; f(x).
+\]
+Un element $x \in A$ est une \emph{solution admissible} ; une solution qui
+realise le minimum est une \emph{solution optimale}, notee $\xopt$. Lorsque
+l'ensemble admissible est decrit par des contraintes d'inegalite, on ecrit
+\[
+  \min_{x \in \R^{n}} f(x)
+  \quad\text{sous contraintes}\quad
+  c_i(x) \le b_i, \quad i = 1, \dots, m.
+\]
+
+\subsection{Convexite}
+
+\begin{definition}[Ensemble convexe]
+Un ensemble $A \subseteq \R^{n}$ est \emph{convexe} si, pour tout couple de
+points de $A$, le segment qui les joint est entierement contenu dans $A$ :
+\[
+  \forall x, y \in A,\ \forall \lambda \in [0,1] :\quad
+  \lambda x + (1-\lambda) y \in A.
+\]
+\end{definition}
+
+\begin{definition}[Fonction convexe]
+Une fonction $f : \R^{n} \to \R$ est \emph{convexe} si
+\[
+  \forall x, y \in \R^{n},\ \forall \lambda \in [0,1] :\quad
+  f\big(\lambda x + (1-\lambda) y\big)
+  \le \lambda f(x) + (1-\lambda) f(y).
+\]
+Geometriquement, tout segment reliant deux points du graphe se situe au-dessus
+(ou sur) le graphe. Lorsque l'inegalite est \emph{stricte} pour $x \neq y$ et
+$\lambda \in {]0,1[}$, la fonction est dite \emph{strictement convexe}.
+\end{definition}
+
+Deux proprietes de stabilite, etablies en travaux diriges, seront utilisees
+pour montrer que notre probleme est convexe :
+\begin{proposition}[Stabilite de la convexite]
+\label{prop:stabilite}
+\leavevmode
+\begin{enumerate}
+  \item Un demi-espace $\{x \in \R^{n} : a\T x \le b\}$ est un ensemble convexe ;
+        une intersection d'ensembles convexes est convexe.
+  \item Une somme de fonctions convexes est convexe ; le produit d'une fonction
+        convexe par un scalaire positif est convexe.
+\end{enumerate}
+\end{proposition}
+
+\subsection{La propriete fondamentale, et ses limites}
+
+\begin{theoreme}[Propriete-or]
+\label{th:or}
+Tout minimum local d'une fonction convexe est un minimum global.
+\end{theoreme}
+
+C'est cette propriete qui justifie l'interet des problemes convexes : un
+algorithme qui converge vers un minimum local converge en realite vers
+l'optimum global. Une precision s'impose toutefois, car elle conditionne la
+lecture de nos resultats experimentaux.
+
+\begin{remarque}[Convexite et unicite]
+\label{rem:unicite}
+La convexite garantit l'unicite de la \emph{valeur optimale} $\Fopt$, mais
+\textbf{pas} celle du \emph{minimiseur} $\xopt$. L'ensemble des minimiseurs
+peut etre reduit a un point, mais aussi former tout un segment --- le cours en
+donne d'ailleurs un exemple en programmation lineaire, ou l'ensemble des
+solutions optimales est un segment entier. L'unicite du minimiseur requiert une
+hypothese plus forte, la \emph{stricte} convexite. Comme nous le verrons
+(section~\ref{sec:probleme}), le LASSO n'est pas strictement convexe en general ;
+on ne pourra donc affirmer que la convergence se fait vers une \emph{meme valeur}
+$\Fopt$, et non necessairement vers un \emph{meme point} $\xopt$.
+\end{remarque}
+
+\subsection{Programmation lineaire et quadratique}
+
+Le cours a etudie en detail la \emph{programmation lineaire}, cas particulier ou
+objectif et contraintes sont lineaires, resolue par l'algorithme du simplexe.
+Notre probleme generalise ce cadre dans une direction differente : l'objectif y
+sera \emph{quadratique} (donc convexe mais non lineaire) et augmente d'un terme
+de regularisation \emph{non differentiable}. Ni le simplexe ni la descente de
+gradient classique ne s'y appliquent directement, ce qui motive l'introduction
+des outils de la section~\ref{sec:theorie}.

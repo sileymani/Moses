@@ -1,0 +1,42 @@
+% ============================================================================
+%  SECTION 4 — OUTILS THEORIQUES : SOUS-DIFFERENTIEL & OPERATEUR PROXIMAL
+%  >>> A REMPLIR PAR LE MEMBRE 2 <<<
+%
+%  Objectif de la section : fournir la fondation theorique dont dependent les
+%  preuves des sections 5 (ISTA) et 6 (FISTA). C'est le PIVOT du rapport.
+%
+%  Contenu attendu (voir REPARTITION_DETAILLEE.md) :
+%    - Sous-differentiel d'une fonction convexe non lisse ; cas de |t| en 0
+%      (l'ensemble des pentes [-1, 1]).
+%    - Condition d'optimalite : 0 \in \partial F(x*).
+%    - Definition de l'operateur proximal :
+%        prox_{t g}(z) = argmin_u  g(u) + (1/2t) ||u - z||^2
+%      + interpretation geometrique.
+%    - DERIVATION COMPLETE du seuillage doux (prox de lambda||.||_1) :
+%      separation coordonnee par coordonnee -> sign(z)*max(|z|-t*lambda, 0).
+%    - Propriete de non-expansivite du prox (utile pour les preuves de conv.).
+%
+%  Notations a respecter (definies dans main.tex) :
+%    \prox, \softthr, \norm{.}, \argmin, \sign, \xopt, \Fopt, \R, \T
+%  Reutiliser : F = f + g, f(x)=1/2||Ax-y||^2, g(x)=lambda||x||_1, L=||A^T A||.
+% ============================================================================
+\section{Outils theoriques : sous-differentiel et operateur proximal}
+\label{sec:theorie}
+
+% --- [MEMBRE 2] Ecrire la section ici. Squelette suggere ci-dessous. --------
+
+\subsection{Le sous-differentiel}
+% TODO (Membre 2)
+
+\subsection{Condition d'optimalite}
+% TODO (Membre 2)
+
+\subsection{L'operateur proximal}
+% TODO (Membre 2)
+
+\subsection{Derivation du seuillage doux}
+% TODO (Membre 2) : c'est le coeur. La formule a etablir est
+% \prox_{t\lambda\norm{\cdot}_1}(z)_i = \sign(z_i)\max(|z_i| - t\lambda, 0).
+
+\subsection{Non-expansivite}
+% TODO (Membre 2)

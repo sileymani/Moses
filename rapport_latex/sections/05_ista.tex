@@ -1,0 +1,33 @@
+% ============================================================================
+%  SECTION 5 — ISTA : ITERATIVE SHRINKAGE-THRESHOLDING
+%  >>> A REMPLIR PAR LE MEMBRE 3 <<<
+%
+%  Depend de la section 4 (operateur proximal) du Membre 2.
+%
+%  Contenu attendu (voir REPARTITION_DETAILLEE.md) :
+%    - Construction d'ISTA comme MAJORATION-MINIMISATION : a chaque pas, on
+%      minimise un majorant quadratique de f + le terme g ; montrer que cela
+%      redonne exactement "pas de gradient + prox".
+%    - Iteration :
+%        x_{k+1} = \softthr( x_k - t \nabla f(x_k), t\lambda )
+%      avec \nabla f(x) = A^T(Ax - y) et pas t <= 1/L, L = ||A^T A||.
+%    - PREUVE DE CONVERGENCE EN O(1/k) (argument du gradient Lipschitz).
+%
+%  Penser a renvoyer a la figure de convergence de la section 9 (experiences).
+% ============================================================================
+\section{ISTA : l'algorithme de gradient proximal}
+\label{sec:ista}
+
+% --- [MEMBRE 3] Ecrire la section ici. Squelette suggere ci-dessous. --------
+
+\subsection{Idee : separer la partie lisse et la partie non lisse}
+% TODO (Membre 3)
+
+\subsection{Construction par majoration-minimisation}
+% TODO (Membre 3)
+
+\subsection{L'algorithme}
+% TODO (Membre 3) : pseudo-code + role du pas t <= 1/L.
+
+\subsection{Convergence en $O(1/k)$}
+% TODO (Membre 3) : enonce + preuve.
