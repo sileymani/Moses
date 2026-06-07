@@ -9,8 +9,8 @@
 Avant toute chose, chacun met en place l'environnement :
 
 ```bash
-git clone <url-du-repo>
-cd <repo>
+git clone https://github.com/sileymani/Moses.git
+cd Moses
 python -m venv .venv
 # Windows :
 .venv\Scripts\activate

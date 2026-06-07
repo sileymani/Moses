@@ -1,7 +1,7 @@
 # Projet Optimisation Convexe — ISTA / FISTA
 
 Méthodes de gradient proximal pour résoudre un problème convexe non lisse (LASSO).
-Le notebook `projet_ista_fista.ipynb` est le fil narratif du projet.
+Le notebook `Notebook.ipynb` est le fil narratif du projet.
 
 > ⚠️ **À lire avant de lancer le notebook.** Suivre les étapes ci-dessous une seule fois met en place l'environnement partagé. Sans ça, le notebook risque de ne pas trouver les bibliothèques (ou d'utiliser le mauvais Python).
 
@@ -10,8 +10,8 @@ Le notebook `projet_ista_fista.ipynb` est le fil narratif du projet.
 ## 1. Récupérer le projet
 
 ```bash
-git clone <url-du-repo>
-cd <repo>
+git clone https://github.com/sileymani/Moses.git
+cd Moses
 ```
 
 ## 2. Créer l'environnement virtuel (venv)
